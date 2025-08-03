@@ -6,10 +6,10 @@ public class CliApiRequestEvent : CliEvent
 
     public override int Prepare()
     {
-        return 0;
+        return PriorityCanIgnore;
     }
     
-    public override Task HandleAsync(KokoroPlayer ttsPlayer, SoundPlayer soundPlayer, CancellationToken cancellationToken)
+    public override Task HandleAsync(Context context, CancellationToken cancellationToken)
     {
         return Task.CompletedTask;
     }

@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using System.Text.Json;
+﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 using GeminiCliVoice;
 using GeminiCliVoice.Model;
@@ -13,6 +12,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddSingleton<KokoroPlayer>();
 builder.Services.AddSingleton<SoundPlayer>();
 builder.Services.AddSingleton<WhisperManager>();
+builder.Services.AddSingleton<GeminiCliManager>();
 
 builder.Services.AddHostedService<GeminiCliEventHandler>();
 builder.Services.AddSingleton<IGeminiCliEventHandler, GeminiCliEventHandler>();
@@ -70,7 +70,7 @@ app.MapGet("/otel-replay",
         var parser = new GeminiCliOtelParser(filePath);
         var events = parser.Parse();
 
-        await ReplayCliEvents(events, eventHandler, cancellationToken);
+        await eventHandler.ReplayCliEvents(events, cancellationToken);
 
         return TypedResults.Ok();
     });
@@ -86,42 +86,12 @@ app.MapGet("/project-replay",
             .OfType<CliEvent>()
             .ToList();
 
-        await ReplayCliEvents(events, eventHandler, cancellationToken);
+        await eventHandler.ReplayCliEvents(events, cancellationToken);
 
         return TypedResults.Ok();
     });
 
 app.Run();
-
-static async Task ReplayCliEvents(List<CliEvent> cliEvents, IGeminiCliEventHandler geminiCliEventHandler,
-    CancellationToken cancellationToken)
-{
-    var sw = new Stopwatch();
-    sw.Start();
-
-    for (int i = 0; i < cliEvents.Count; i++)
-    {
-        if (cancellationToken.IsCancellationRequested)
-        {
-            break;
-        }
-
-        var currEvent = cliEvents[i];
-
-        Console.WriteLine($"{i} - {sw.ElapsedMilliseconds} - {currEvent.EventName} - {currEvent.Body}");
-        
-        // TODO - probably need to signify to the eventhandler that this is a replay event
-        // => impacts actions like speech to text input which isn't necessary during replay
-        geminiCliEventHandler.Handle(currEvent);
-
-        if (i < cliEvents.Count - 1)
-        {
-            var nextEvent = cliEvents[i + 1];
-            var delay = nextEvent.EventTimestamp - currEvent.EventTimestamp; // todo remove duration handle setup?
-            await Task.Delay(delay, cancellationToken);
-        }
-    }
-}
 
 public class LogRecord
 {

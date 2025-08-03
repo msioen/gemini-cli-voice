@@ -11,13 +11,11 @@ public class CliToolCallEvent : CliEvent
     
     public override int Prepare()
     {
-        return 1;
+        return PriorityDefault;
     }
     
-    public override Task HandleAsync(KokoroPlayer ttsPlayer, SoundPlayer soundPlayer, CancellationToken cancellationToken)
+    public override Task HandleAsync(Context context, CancellationToken cancellationToken)
     {
-        Console.WriteLine($"starting to play (tool): Tool call: {FunctionName}");
-        
-        return ttsPlayer.PlayAsync($"Tool call: {FunctionName}", cancellationToken);
+        return context.KokoroPlayer.PlayAsync($"Tool call: {FunctionName}", cancellationToken);
     }
 }

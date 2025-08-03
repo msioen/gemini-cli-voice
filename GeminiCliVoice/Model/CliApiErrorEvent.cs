@@ -8,11 +8,11 @@ public class CliApiErrorEvent : CliEvent
     
     public override int Prepare()
     {
-        return 5;
+        return PriorityDefault;
     }
     
-    public override Task HandleAsync(KokoroPlayer ttsPlayer, SoundPlayer soundPlayer, CancellationToken cancellationToken)
+    public override Task HandleAsync(Context context, CancellationToken cancellationToken)
     {
-        return Task.CompletedTask;
+        return context.KokoroPlayer.PlayAsync(Error, cancellationToken);
     }
 }

@@ -6,12 +6,16 @@ public class CliInputActiveEvent : CliEvent
     
     public override int Prepare()
     {
-        return 1;
+        return PriorityDefault;
     }
     
-    public override Task HandleAsync(KokoroPlayer ttsPlayer, SoundPlayer soundPlayer, CancellationToken cancellationToken)
+    public override Task HandleAsync(Context context, CancellationToken cancellationToken)
     {
-        // TODO - if active ensure we're listening for input
-        return Task.CompletedTask;
+        if (context.IsReplayMode)
+        {
+            return Task.CompletedTask;
+        }
+        
+        return HandleInputLoopAsync(context, cancellationToken);
     }
 }

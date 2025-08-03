@@ -6,11 +6,11 @@ public class CliUserPromptEvent : CliEvent
 
     public override int Prepare()
     {
-        return 1;
+        return PriorityDefault;
     }
 
-    public override Task HandleAsync(KokoroPlayer ttsPlayer, SoundPlayer soundPlayer, CancellationToken cancellationToken)
+    public override Task HandleAsync(Context context, CancellationToken cancellationToken)
     {
-        return soundPlayer.PlaySoundAsync("mixkit-correct-answer-tone-2870.wav", cancellationToken);
+        return context.SoundPlayer.PlaySoundAsync("mixkit-correct-answer-tone-2870.wav", cancellationToken);
     }
 }

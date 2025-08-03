@@ -15,6 +15,7 @@ public class CliApiResponseEvent : CliEvent
     {
         // TODO - different prio / contents based on 'thought' vs 'text' => maybe even skip thought alltogether depending on settings
         // => for now skipping thoughts
+        // => some additional size limitations or duration limitations might be needed
         var response = JsonSerializer.Deserialize<List<GeminiResponse>>(ResponseText);
         var parts = response?
             .SelectMany(r => r.Candidates)
@@ -27,16 +28,19 @@ public class CliApiResponseEvent : CliEvent
         if (parts != null && parts.Any())
         {
             _parsedResponse = string.Join(" ", parts);
-            return 5;
+            return PriorityDefault;
         }
         
-        return 0;
+        return PriorityCanIgnore;
     }
     
-    public override Task HandleAsync(KokoroPlayer ttsPlayer, SoundPlayer soundPlayer, CancellationToken cancellationToken)
+    public override Task HandleAsync(Context context, CancellationToken cancellationToken)
     {
-        Console.WriteLine("starting to play (response): " + _parsedResponse);
+        if (string.IsNullOrWhiteSpace(_parsedResponse))
+        {
+            return Task.CompletedTask;
+        }
         
-        return ttsPlayer.PlayAsync(_parsedResponse, cancellationToken);
+        return context.KokoroPlayer.PlayAsync(_parsedResponse, cancellationToken);
     }
 }
