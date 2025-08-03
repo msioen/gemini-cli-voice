@@ -71,8 +71,16 @@ Note - the command we're using is optimized for shorter commands. In our usecase
 
 ## Gemini CLI Interaction
 
+### Gemini CLI => Project
+
 [Gemini CLI](https://github.com/google-gemini/gemini-cli) is the open source command-line AI utility from Google. Unfortunately there are no built-in 'hooks' or a way to easily get feedback while it's doing its thing. On top of that in a voice based communication model we also may not want to read out everything it's doing, definitely when starting to display code file changes.
 
 To enable getting feedback from Gemini CLI, the initial plan was to setup our own OpenTelemetry collector and hook in with the built in [OpenTelemetry integration](https://github.com/google-gemini/gemini-cli/blob/main/docs/telemetry.md). This works for the most part but there are some key limitations: approving tools and knowing when the Gemini CLI expects input. Due to these limitations some changes to Gemini CLI were needed regardless which allows us to send the data directly to our project without needing the OpenTelemetry collector in between.
 
-We'll use the same otel logging approach but for the events we want, we'll forward them additionally to our endpoint.
+We'll use the existing otel logging code but for the events we want, we'll forward them additionally to our endpoint.
+
+### Project => Gemini CLI
+
+For reverse feedback we have a similar problem. Getting the correct process and sending our input and requests to it isn't that straightforward.
+
+One option could be to self-launch/host the Gemini CLI which could provide all the needed input/output streams but which might be tricky to get everything working. In v1 we'll use AppleScript files to select the terminal window, focus if needed, and input the necessary keystrokes.

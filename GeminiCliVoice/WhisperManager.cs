@@ -14,9 +14,14 @@ public class WhisperManager
     public async Task<string> GetTranscribedMicrophoneInputAsync(int stopSilenceDurationInMs, 
         CancellationToken cancellationToken)
     {
-        var outputFile = $"{DateTime.Now:yyyyMMddHHmmssfff}.txt";
-        var activationFile = "act.bin";
-            
+        var outputFile = $"whisper/{DateTime.Now:yyyyMMddHHmmssfff}.txt";
+        var activationFile = "whisper/act.bin";
+
+        if (!Directory.Exists("whisper"))
+        {
+            Directory.CreateDirectory("whisper");
+        }
+        
         if (File.Exists(outputFile))
         {
             File.Delete(outputFile);
