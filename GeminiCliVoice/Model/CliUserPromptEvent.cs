@@ -11,6 +11,6 @@ public class CliUserPromptEvent : CliEvent
 
     public override Task HandleAsync(Context context, CancellationToken cancellationToken)
     {
-        return context.SoundPlayer.PlaySoundAsync("mixkit-correct-answer-tone-2870.wav", cancellationToken);
+        return context.SoundPlayer.PlaySoundAsync("mixkit-retro-game-notification-212.wav", cancellationToken);
     }
 }

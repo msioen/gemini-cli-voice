@@ -16,11 +16,8 @@ public class GeminiCliEventHandler : IHostedService, IGeminiCliEventHandler
     
     private CancellationTokenSource _cts = new CancellationTokenSource();
 
-    private int _currPrio = -1;
-    private int _queuePrio = -1;
-
     private Task? _currTask;
-    private Func<Task>? _nextTaskFunc;
+    private Queue<(Func<Task> Task, bool SkipIfNotLastTask)> _nextTasks = new Queue<(Func<Task>, bool)>();
 
     public GeminiCliEventHandler(
         KokoroPlayer kokoroPlayer,
@@ -73,9 +70,16 @@ public class GeminiCliEventHandler : IHostedService, IGeminiCliEventHandler
                     var delay = nextEvent.EventTimestamp - currEvent.EventTimestamp; // todo remove duration handle setup?
                     await Task.Delay(delay, cancellationToken);
                 }
-                else if (_currTask != null && !_currTask.IsCompleted)
+                else
                 {
-                    await AwaitCurrentTaskAsync();
+                    // ensure our replay only resets when the last replay event is processed
+                    var endTcs = new TaskCompletionSource();
+                    _nextTasks.Enqueue((() =>
+                    {
+                        endTcs.SetResult();
+                        return Task.CompletedTask;
+                    }, false));
+                    await endTcs.Task;
                 }
             }
         }
@@ -94,27 +98,11 @@ public class GeminiCliEventHandler : IHostedService, IGeminiCliEventHandler
         }
     }
     
-    // TODO - all events of same prio should (optionally) be queued, now we risk losing critical events for e2e behaviour
     public void Handle(CliEvent cliEvent)
     {
         var contentPrio = cliEvent.Prepare();
-        if (contentPrio > _currPrio || _currTask == null || _currTask.IsCompleted)
-        {
-            Console.WriteLine("Processing event: " + cliEvent.EventName + " with priority: " + contentPrio);
-            _cts.Cancel(); // probably should await this somehow?
-            _currTask = null;
-            _cts = new CancellationTokenSource();
-
-            _currPrio = contentPrio;
-            _nextTaskFunc = () => cliEvent.HandleAsync(_context, _cts.Token);
-        }
-        else if (contentPrio > _queuePrio)
-        {
-            Console.WriteLine("Queueing event: " + cliEvent.EventName + " with priority: " + contentPrio);
-            _queuePrio = contentPrio;
-            _nextTaskFunc = () => cliEvent.HandleAsync(_context, _cts.Token);
-        }
-
+        _nextTasks.Enqueue((() => cliEvent.HandleAsync(_context, _cts.Token), cliEvent is CliInputActiveEvent));
+        
         ProcessNextEventAsync();
     }
     
@@ -126,24 +114,22 @@ public class GeminiCliEventHandler : IHostedService, IGeminiCliEventHandler
             return;
         }
         
-        while (true)
+        while (_nextTasks.TryDequeue(out var nextTask))
         {
-            if (_nextTaskFunc != null)
+            if (nextTask.SkipIfNotLastTask && _nextTasks.Count > 0)
             {
-                Console.WriteLine("LOOP: get next task");
-                _currTask = _nextTaskFunc();
-                
-                _nextTaskFunc = null;
-                _queuePrio = -1;
-                Console.WriteLine("LOOP: await curr task");
-                await AwaitCurrentTaskAsync();
-
-                Console.WriteLine("LOOP: done awaiting curr task");
+                // Skip this task if there are more tasks in the queue
+                Console.WriteLine("Skipping task because there are more tasks in the queue.");
                 continue;
             }
+            
+            Console.WriteLine("LOOP: get next task");
+            _currTask = nextTask.Task();
+            
+            Console.WriteLine("LOOP: await curr task");
+            await AwaitCurrentTaskAsync();
 
-            Console.WriteLine("LOOP: break");
-            break;
+            Console.WriteLine("LOOP: done awaiting curr task");
         }
     }
     

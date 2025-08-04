@@ -61,7 +61,14 @@ public class WhisperManager
 
         if (File.Exists(outputFile))
         {
-            return await File.ReadAllTextAsync(outputFile, cancellationToken);
+            var output = await File.ReadAllTextAsync(outputFile, cancellationToken);
+            output = output.Trim();
+            if (output.Length == 0 || output.All(char.IsPunctuation))
+            {
+                return string.Empty;
+            }
+            
+            return output;
         }
 
         return string.Empty;

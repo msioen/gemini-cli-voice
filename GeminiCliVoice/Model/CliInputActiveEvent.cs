@@ -11,7 +11,7 @@ public class CliInputActiveEvent : CliEvent
     
     public override Task HandleAsync(Context context, CancellationToken cancellationToken)
     {
-        if (context.IsReplayMode)
+        if (context.IsReplayMode || !Active)
         {
             return Task.CompletedTask;
         }
