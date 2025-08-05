@@ -8,6 +8,8 @@ The end goal of this project is to get the behaviour fully running on a raspberr
 
 Before starting this I validated approaches using MCP (for example [Voice Mode](https://getvoicemode.com/)) and the built-in accessibility features of macOS. I wasn't able to get the UX I need, nor the flexibility and control I wanted.
 
+Some additional context, including demo videos, are available on the following blog post: [https://michielsioen.be/2025-08-05-voice-vibe-coding-with-gemini-cli/](https://michielsioen.be/2025-08-05-voice-vibe-coding-with-gemini-cli/).
+
 ## Flow
 
 ```mermaid
@@ -31,6 +33,7 @@ sequenceDiagram
         Project->>Project: Play 'recording' sound
         Project->>STT: Record/transcribe audio
         Note over Project, STT: Using silence detection<br />wait for a given amount of time
+        User->>STT: Microphone Input
         STT-->>Project: 
         Project->>Project: Validate received transcription
         Project->>Project: Play 'received' sound
@@ -84,3 +87,14 @@ We'll use the existing otel logging code but for the events we want, we'll forwa
 For reverse feedback we have a similar problem. Getting the correct process and sending our input and requests to it isn't that straightforward.
 
 One option could be to self-launch/host the Gemini CLI which could provide all the needed input/output streams but which might be tricky to get everything working. In v1 we'll use AppleScript files to select the terminal window, focus if needed, and input the necessary keystrokes.
+
+## Local Setup
+
+In order to get everything working, this currently builds on two open-source forks:
+- [gemini-cli](https://github.com/msioen/gemini-cli)
+- [whisper.cpp](https://github.com/msioen/whisper.cpp)
+
+You need both forks available locally and successfully built. The WhisperManager.cs class should be changed with the path to your local whisper.cpp repository.
+
+- run this project
+- open the gemini fork => this will automatically start communicating with this project, no additional actions are needed
