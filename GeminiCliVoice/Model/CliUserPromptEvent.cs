@@ -9,8 +9,15 @@ public class CliUserPromptEvent : CliEvent
         return PriorityDefault;
     }
 
-    public override Task HandleAsync(Context context, CancellationToken cancellationToken)
+    public override async Task HandleAsync(Context context, CancellationToken cancellationToken)
     {
-        return context.SoundPlayer.PlaySoundAsync("mixkit-retro-game-notification-212.wav", cancellationToken);
+        // in replay mode, we'll play back the prompt text
+        // note - this does mess up the timeline somewhat since we're playing back the prompt text when it was fully received in previous events
+        if (context.IsReplayMode && !string.IsNullOrWhiteSpace(PromptText))
+        {
+            await context.SoundPlayer.PlaySoundAsync("new-notification-010-352755.wav", cancellationToken);
+            await context.KokoroPlayer.PlayAsync(PromptText, "am_adam", cancellationToken);
+            await context.SoundPlayer.PlaySoundAsync("notification-alert-269289.wav", cancellationToken);
+        }
     }
 }

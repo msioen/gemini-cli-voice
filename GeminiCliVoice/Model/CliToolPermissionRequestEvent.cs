@@ -17,13 +17,13 @@ public class CliToolPermissionRequestEvent : CliEvent
         // future: use voice prompt
         if (!context.IsReplayMode)
         {
-            var ttsTask = context.KokoroPlayer.PlayAsync("Auto approving tool execution: " + Title, cancellationToken);
+            var ttsTask = context.KokoroPlayer.PlayAsync("Auto approving tool execution: " + Title, cancellationToken: cancellationToken);
             var inputTask = context.GeminiCliManager.InputAsync(string.Empty, cancellationToken);
             await Task.WhenAll(ttsTask, inputTask);
         }
         else
         {
-            await context.KokoroPlayer.PlayAsync("Replay - auto approving tool execution: " + Title, cancellationToken);
+            await context.KokoroPlayer.PlayAsync("Auto approving tool execution: " + Title, cancellationToken: cancellationToken);
         }
     }
 }

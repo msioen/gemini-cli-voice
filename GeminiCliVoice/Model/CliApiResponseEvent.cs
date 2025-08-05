@@ -41,6 +41,6 @@ public class CliApiResponseEvent : CliEvent
             return Task.CompletedTask;
         }
         
-        return context.KokoroPlayer.PlayAsync(_parsedResponse, cancellationToken);
+        return context.KokoroPlayer.PlayAsync(_parsedResponse, cancellationToken: cancellationToken);
     }
 }

@@ -30,16 +30,18 @@ public abstract class CliEvent
         while(attempts > 0 && string.IsNullOrWhiteSpace(input))
         {
             // play sound indicating awaiting input
-            var playSoundTask = context.SoundPlayer.PlaySoundAsync("mixkit-correct-answer-tone-2870.wav", cancellationToken);
+            var playSoundTask = context.SoundPlayer.PlaySoundAsync("new-notification-010-352755.wav", cancellationToken);
             var inputTask = context.WhisperManager.GetTranscribedMicrophoneInputAsync(4000, cancellationToken);
             await Task.WhenAll(playSoundTask, inputTask);
+            
+            await context.SoundPlayer.PlaySoundAsync("notification-alert-269289.wav", cancellationToken);
 
             input = await inputTask;
             if (string.IsNullOrWhiteSpace(input))
             {
                 attempts--;
                 var feedback = attempts > 0 ? "I didn't hear anything, please try again." : "No input received, going to sleep.";
-                await context.KokoroPlayer.PlayAsync(feedback, cancellationToken);
+                await context.KokoroPlayer.PlayAsync(feedback, cancellationToken: cancellationToken);
             }
         }
         

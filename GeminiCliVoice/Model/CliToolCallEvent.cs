@@ -16,6 +16,6 @@ public class CliToolCallEvent : CliEvent
     
     public override Task HandleAsync(Context context, CancellationToken cancellationToken)
     {
-        return context.KokoroPlayer.PlayAsync($"Tool call: {FunctionName}", cancellationToken);
+        return context.KokoroPlayer.PlayAsync($"Tool call: {FunctionName}", cancellationToken: cancellationToken);
     }
 }

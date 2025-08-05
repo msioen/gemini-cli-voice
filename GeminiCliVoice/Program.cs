@@ -28,16 +28,27 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.MapGet("/stt", 
-    async (WhisperManager whisperManager, CancellationToken cancellationToken) =>
+    async (WhisperManager whisperManager, SoundPlayer soundPlayer, CancellationToken cancellationToken) =>
     {
-        var text = await whisperManager.GetTranscribedMicrophoneInputAsync(4000, cancellationToken);
+        var playSoundTask = soundPlayer.PlaySoundAsync("new-notification-010-352755.wav", cancellationToken);
+        var inputTask = whisperManager.GetTranscribedMicrophoneInputAsync(4000, cancellationToken);
+        await Task.WhenAll(playSoundTask, inputTask);
+            
+        await soundPlayer.PlaySoundAsync("notification-alert-269289.wav", cancellationToken);
+
+        var text = await inputTask;
         return TypedResults.Ok(text);
     }) ;
 
 app.MapGet("/tts", 
-    async (string text, KokoroPlayer kokoroPlayer, CancellationToken cancellationToken) =>
+    async (string text, string voice, KokoroPlayer kokoroPlayer, CancellationToken cancellationToken) =>
     {
-         await kokoroPlayer.PlayAsync(text, cancellationToken);
+        if (string.IsNullOrWhiteSpace(voice))
+        {
+            voice = "af_heart";
+        }
+        
+        await kokoroPlayer.PlayAsync(text, voice, cancellationToken);
         return TypedResults.Ok();
     });
 

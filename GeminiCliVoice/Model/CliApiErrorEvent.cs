@@ -13,6 +13,6 @@ public class CliApiErrorEvent : CliEvent
     
     public override Task HandleAsync(Context context, CancellationToken cancellationToken)
     {
-        return context.KokoroPlayer.PlayAsync(Error, cancellationToken);
+        return context.KokoroPlayer.PlayAsync(Error, cancellationToken: cancellationToken);
     }
 }
